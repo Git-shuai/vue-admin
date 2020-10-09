@@ -163,11 +163,12 @@
             //自定义函数开始
             //高光效果
             const toggleMenu = (data => {
-                // this.$refs[ruleForm].resetFields();
                 menuTab.forEach(elem => {
                     elem.current = false;
                 });
                 data.current = true;
+                //表单重置
+                refs.ruleForm.resetFields();
             });
             //登录
             const submitForm = (formName => {
