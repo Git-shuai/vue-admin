@@ -15,6 +15,11 @@ const service = axios.create({
 // 添加请求拦截器
 service.interceptors.request.use(function (config) {
     // 在发送请求之前做些什么
+
+    //tokey ,userid
+    // config.headers.token='qqq';
+    // config.headers['usernamefengtians']='1234';
+    // console.log(config.headers);
     return config;
 }, function (error) {
     // 对请求错误做些什么
@@ -25,7 +30,7 @@ service.interceptors.request.use(function (config) {
 service.interceptors.response.use(function (response) {
     // 对响应数据做点什么
     let data = response.data;
-    if (data !== 0) {
+    if (data.resCode !== 0) {
         Message.error(data.message);
         return Promise.reject(data);
     } else {

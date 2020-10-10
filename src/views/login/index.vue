@@ -31,10 +31,12 @@
                     <label>验证码</label>
                     <el-row :gutter="24">
                         <el-col :span="14">
-                            <el-input v-model.number="ruleForm.code" maxlength="6" minlength="6"></el-input>
+                            <el-input v-model="ruleForm.code" maxlength="6" minlength="6"></el-input>
                         </el-col>
                         <el-col :span="10">
-                            <el-button type="success" class="block" @click="getSms()">获取验证码</el-button>
+                            <el-button type="success" class="block" @click="getSms()" :disabled="codeBtnStatus.status">
+                                {{codeBtnStatus.text}}
+                            </el-button>
                         </el-col>
                     </el-row>
 
@@ -52,7 +54,8 @@
     </div>
 </template>
 <script>
-    import {getSMS} from "@/api/login"
+    import sh1 from "js-sha1";
+    import {getSMS, Register,Login} from "@/api/login"
     import {reactive, ref, onMounted} from "@vue/composition-api";
     import {validateEmail, validatePwd, validateCode} from "@/utils/validate";
 
@@ -74,6 +77,7 @@
             //放置data 数据 声明周期 自定义函数
             // console.log(context);
             //对象类型 reactive
+//******************************************************************************************************************
             const menuTab = reactive([
                 {txt: "登录", current: true},
                 {txt: "注册", current: false}
@@ -84,8 +88,17 @@
             const isActive = ref(true);
             // console.log(isActive.value);
 
+            //验证码按钮状态
+            const codeBtnStatus = reactive({
+                status: false,
+                text: '获取验证码'
+            });
+
+            //倒计时
+            const timer = ref(null);
+
             //登录按钮禁用状态
-            const loginBtnStatus = ref(false);
+            const loginBtnStatus = ref(true);
 
             //表单绑定数据
             const ruleForm = reactive({
@@ -94,7 +107,7 @@
                 passwords: '',
                 code: ''
             });
-
+//******************************************************************************************************************
             //验证方法开始
             //验证邮箱
             let validateUsername = (rule, value, callback) => {
@@ -132,9 +145,7 @@
             let checkCode = (rule, value, callback) => {
                 if (!value) {
                     callback(new Error('验证码不能为空'));
-                } else if (validateCode(value)) {
-                    callback(new Error('验证码为6位数字'));
-                } else {
+                }  else {
                     callback();
                 }
             };
@@ -154,12 +165,12 @@
                 ]
             });
             //验证方法结束
-
+//******************************************************************************************************************
             //挂载完成后
             onMounted(() => {
 
             });
-
+//******************************************************************************************************************
             //自定义函数开始
             //高光效果
             const toggleMenu = (data => {
@@ -169,18 +180,48 @@
                 data.current = true;
                 //表单重置
                 refs.ruleForm.resetFields();
+                restCodeBtn();
             });
+
             //登录
             const submitForm = (formName => {
                 refs[formName].validate((valid) => {
                     if (valid) {
-                        alert('submit!');
+                        let data = {
+                            username: ruleForm.username,
+                            password: sh1(ruleForm.password),
+                            code: ruleForm.code,
+                            module: menuTab[0].current ? 'login' : 'register'
+                        };
+                        console.log(data);
+                        if (menuTab[0].current){
+                            Login(data).then((response)=>{
+                                let resdata = response.data;
+                                root.$message({message: resdata.message, type: 'success'});
+                                //重置验证码按钮
+                                restCodeBtn();
+                                //跳转到显示页面
+                            }).catch((error)=>{
+
+                            });
+                        }else {
+                            Register(data).then(response => {
+                                let resdata = response.data;
+                                root.$message({message: resdata.message, type: 'success'});
+                                //重置验证码按钮
+                                toggleMenu(menuTab[0]);
+                                restCodeBtn();
+                            }).catch(error => {
+                            });
+                        }
                     } else {
                         console.log('error submit!!');
                         return false;
                     }
                 });
             });
+
+
             //获取验证码
             const getSms = (() => {
                 //提示信息
@@ -192,17 +233,59 @@
                     root.$message.error('邮箱格式错误，请重新输入');
                     return false;
                 }
-
                 let data = {
                     username: ruleForm.username,
-                    module: 'login'
+                    module: menuTab[0].current ? 'login' : 'register'
                 };
+                //处理发送按钮
+                codeBtnStatus.status = true;
+                codeBtnStatus.text = '发送中';
+                //成功处理
                 new getSMS(data).then(response => {
-
+                    let data = response.data;
+                    root.$message({message: data.message, type: 'success'});
+                    //启用登录按钮
+                    loginBtnStatus.value = false;
+                    //调用定时器
+                    countDown(60);
                 }).catch(error => {
-                    console.log(error)
+                    // console.log(error)
                 });
             });
+
+            //重置验证码按钮
+            const restCodeBtn =(()=>{
+                clearInterval(timer.value);
+                codeBtnStatus.status = false;
+                codeBtnStatus.text = '获取验证码';
+                loginBtnStatus.value=true;
+            });
+
+            //倒计时
+            const countDown = ((number) => {
+                //setTimeout  执行一次
+                //setInterval  不断的执行，条件控制
+
+                //判断定时器是否存在存在就清楚
+                if (timer.value){
+                    clearInterval(timer.value);
+                }
+                let time = number;
+
+                timer.value = setInterval(() => {
+                    time--;
+                    if (time === 0) {
+                        clearInterval(timer.value);
+                        codeBtnStatus.status = false;
+                        codeBtnStatus.text = '重新发送';
+                    } else {
+
+                        codeBtnStatus.text = `倒计时${time}秒`;
+                    }
+                }, 1000);
+
+            });
+//******************************************************************************************************************
             //自定义函数结束
             return {
                 menuTab,
@@ -211,7 +294,11 @@
                 toggleMenu,
                 submitForm,
                 getSms,
-                loginBtnStatus
+                loginBtnStatus,
+                codeBtnStatus,
+                countDown,
+                timer,
+                restCodeBtn
             }
         }
     };
