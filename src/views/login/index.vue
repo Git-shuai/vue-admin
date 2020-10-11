@@ -201,6 +201,9 @@
                                 //重置验证码按钮
                                 restCodeBtn();
                                 //跳转到显示页面
+                                root.$router.push({
+                                    name: 'Console'
+                                })
                             }).catch((error)=>{
 
                             });
