@@ -55,7 +55,7 @@
 </template>
 <script>
     import sh1 from "js-sha1";
-    import {getSMS, Register,Login} from "@/api/login"
+    import {getSMS, Register, Login} from "@/api/login"
     import {reactive, ref, onMounted} from "@vue/composition-api";
     import {validateEmail, validatePwd, validateCode} from "@/utils/validate";
 
@@ -145,7 +145,7 @@
             let checkCode = (rule, value, callback) => {
                 if (!value) {
                     callback(new Error('验证码不能为空'));
-                }  else {
+                } else {
                     callback();
                 }
             };
@@ -194,20 +194,28 @@
                             module: menuTab[0].current ? 'login' : 'register'
                         };
                         console.log(data);
-                        if (menuTab[0].current){
-                            Login(data).then((response)=>{
-                                let resdata = response.data;
-                                root.$message({message: resdata.message, type: 'success'});
-                                //重置验证码按钮
-                                restCodeBtn();
-                                //跳转到显示页面
+                        if (menuTab[0].current) {
+                            //异步调用
+                            root.$store.dispatch('login', data).then((response) => {
                                 root.$router.push({
                                     name: 'Console'
                                 })
-                            }).catch((error)=>{
-
+                            }).catch((error) => {
                             });
-                        }else {
+
+                            // Login(data).then((response)=>{
+                            //     let resdata = response.data;
+                            //     root.$message({message: resdata.message, type: 'success'});
+                            //     //重置验证码按钮
+                            //     restCodeBtn();
+                            //     //跳转到显示页面
+                            //     root.$router.push({
+                            //         name: 'Console'
+                            //     })
+                            // }).catch((error)=>{
+                            //
+                            // });
+                        } else {
                             Register(data).then(response => {
                                 let resdata = response.data;
                                 root.$message({message: resdata.message, type: 'success'});
@@ -257,11 +265,11 @@
             });
 
             //重置验证码按钮
-            const restCodeBtn =(()=>{
+            const restCodeBtn = (() => {
                 clearInterval(timer.value);
                 codeBtnStatus.status = false;
                 codeBtnStatus.text = '获取验证码';
-                loginBtnStatus.value=true;
+                loginBtnStatus.value = true;
             });
 
             //倒计时
@@ -270,7 +278,7 @@
                 //setInterval  不断的执行，条件控制
 
                 //判断定时器是否存在存在就清楚
-                if (timer.value){
+                if (timer.value) {
                     clearInterval(timer.value);
                 }
                 let time = number;

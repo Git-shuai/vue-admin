@@ -29,11 +29,6 @@
 
         setup(props) {
             //**********************************************************************************
-            const msg = ref("冯天帅");
-
-            console.log(props.iconClass);
-            console.log(props.className);
-
             const iconName=computed(()=> `#icon-${props.iconClass}`);
             const svgClass = computed(()=>{
                 if (props.className){
@@ -54,7 +49,6 @@
             // 返回数据
             //****************************************************************************
             return {
-                msg,
                 iconName,
                 svgClass
             }

@@ -6,11 +6,15 @@
     background-color: rgba(254, 108, 108, 0.6) !important;
     color: #fff !important;
   }
+  span{
+    background-color: rgba(254, 108, 108, 0.6) !important;
+    color: #fff !important;
+  }
 }
 
 //修改以及菜单样式
 .el-submenu {
-  &.is-active.is-opened .el-submenu__title {
+  &.is-active .el-submenu__title {
     background-color: $mainColor !important;
   }
 }

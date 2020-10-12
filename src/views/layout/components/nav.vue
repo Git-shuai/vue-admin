@@ -5,8 +5,7 @@
         </div>
 
         <el-menu class="el-menu-vertical-demo"
-                 @open="handleOpen" @close="handleClose"
-                 :collapse="isCollapse" background-color="transparent" text-color="#fff"
+                 :collapse="isCollapse" background-color="#344a5f" text-color="#fff"
                  router>
 
             <template v-for="(item,index) in routes">
@@ -28,28 +27,27 @@
 
 <script>
     //导入
-    import {reactive, ref, onMounted} from "@vue/composition-api";
+    import {reactive, computed, ref, onMounted} from "@vue/composition-api";
 
     export default {
         name: "navMenu",
         setup(props, {root}) {
             //定义数据
             //***************************************************************************************************
-            const isCollapse = ref(false);
+            const isCollapse = computed(() => root.$store.state.App.isCollapse);
             const routes = reactive(root.$router.options.routes);
 
-
-            // console.log(plusOne)
+            //vuex
+            // console.log(root.$store.state.isCollapse);
+            // root.$store.commit('SET_isCollapse',true);
+            // console.log(root.$store.state.isCollapse);
             //***************************************************************************************************
 
             //自定义定义方法
             //***************************************************************************************************
-            const handleOpen = ((key, keyPath) => {
-                console.log(key, keyPath);
-            });
-            const handleClose = ((key, keyPath) => {
-                console.log(key, keyPath);
-            });
+
+
+
             //***************************************************************************************************
 
 
@@ -59,10 +57,7 @@
                 //数据
                 isCollapse,
                 routes,
-
                 //方法
-                handleClose,
-                handleOpen
             };
             //***************************************************************************************************
 
@@ -80,15 +75,28 @@
         width: $navMenu;
         height: 100vh;
         background-color: #344a5f;
+        @include webkit(transition, all .5s ease 0s);
         svg {
             font-size: 20px;
             margin-right: 8px;
         }
     }
+
     .logo {
         img {
-            width: 70px;
+            width: 50px;
             margin: 25px auto 25px;
+        }
+    }
+
+    .open{
+        #nav-wrap{
+            width: $navMenu;
+        }
+    }
+    .close{
+        #nav-wrap{
+            width: $navMenuMin;
         }
     }
 </style>
