@@ -1,21 +1,26 @@
 <template>
     <div id="nav-wrap">
+        <div class="logo">
+            <img src="../../../assets/logo.png" height="66" width="150"/>
+        </div>
+
         <el-menu class="el-menu-vertical-demo"
                  @open="handleOpen" @close="handleClose"
                  :collapse="isCollapse" background-color="transparent" text-color="#fff"
-                  router >
+                 router>
 
             <template v-for="(item,index) in routes">
-                <el-submenu v-if="!item.hidden" :key="item.id" :index="index">
+                <el-submenu v-if="!item.hidden" :key="item.id" :index="index+''">
                     <!--一级菜单-->
                     <template slot="title">
-                        <i class="el-icon-location"></i>
+                        <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon"/>
                         <span slot="title">{{item.meta.name}}</span>
                     </template>
-                    <el-menu-item v-for="subItme in item.children" :key="subItme.id" :index="subItme.path">
-                        {{subItme.meta.name}}
+                    <el-menu-item v-for="subItem in item.children" :key="subItem.id" :index="subItem.path">
+                        {{subItem.meta.name}}
                     </el-menu-item>
                 </el-submenu>
+
             </template>
         </el-menu>
     </div>
@@ -32,7 +37,9 @@
             //***************************************************************************************************
             const isCollapse = ref(false);
             const routes = reactive(root.$router.options.routes);
-            console.log(routes)
+
+
+            // console.log(plusOne)
             //***************************************************************************************************
 
             //自定义定义方法
@@ -73,5 +80,15 @@
         width: $navMenu;
         height: 100vh;
         background-color: #344a5f;
+        svg {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+    }
+    .logo {
+        img {
+            width: 70px;
+            margin: 25px auto 25px;
+        }
     }
 </style>
