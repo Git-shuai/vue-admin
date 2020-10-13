@@ -196,7 +196,7 @@
                         console.log(data);
                         if (menuTab[0].current) {
                             //异步调用
-                            root.$store.dispatch('login', data).then((response) => {
+                            root.$store.dispatch('Login/login', data).then((response) => {
                                 root.$router.push({
                                     name: 'Console'
                                 })

@@ -5,9 +5,9 @@
         </div>
         <div class="pull-right">
             <div class="pull-left user-info">
-                管理员
+                {{username}}
             </div>
-            <div class="pull-left head-icon">
+            <div class="pull-left head-icon" @click="exit">
                 <svg-icon icon-class="exit" className="exit"></svg-icon>
             </div>
         </div>
@@ -15,17 +15,40 @@
 </template>
 
 <script>
+    import {reactive, computed, ref, onMounted} from "@vue/composition-api";
+
     export default {
         name: "headerMenu",
-
         setup(props, {root}) {
+            const username = computed(() => root.$store.state.Login.username);
 
-            const navMenuStatus = () => {
-                root.$store.commit('SET_isCollapse');
-            };
+            const navMenuStatus = (() => {
+                root.$store.commit('App/SET_isCollapse');
+            });
+            //退出登录
 
-            return{
-                navMenuStatus
+
+            const exit = (() => {
+                root.$confirm('确定要退出吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    root.$message({message: "注销成功", type: 'success'});
+                    root.$router.push({
+                        name: 'Login'
+                    })
+                }).catch(() => {
+                    root.$message({
+                        type: 'info',
+                        message: '已取消注销'
+                    });
+                });
+            });
+            return {
+                navMenuStatus,
+                username,
+                exit
             }
         }
     }
@@ -42,7 +65,7 @@
         height: 75px;
         line-height: 75px;
         background-color: #fff;
-        @include webkit(box-shadow,0 3px 16px 0 rgba(0, 0, 0, .1));
+        @include webkit(box-shadow, 0 3px 16px 0 rgba(0, 0, 0, .1));
         @include webkit(transition, all .5s ease 0s);
     }
 
@@ -66,13 +89,14 @@
         }
     }
 
-    .open{
-        #header-wrap{
+    .open {
+        #header-wrap {
             left: $navMenu;
         }
     }
-    .close{
-        #header-wrap{
+
+    .close {
+        #header-wrap {
             left: $navMenuMin;
         }
     }
