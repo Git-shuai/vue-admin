@@ -1,7 +1,7 @@
 import Cookie from "cookie_js";
 
 const state = {
-    isCollapse: JSON.parse(Cookie.get('isCollapse'))|| false
+    isCollapse: Cookie.get('isCollapse')|| false
 };
 
 const getters = {
