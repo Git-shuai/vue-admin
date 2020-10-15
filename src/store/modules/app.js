@@ -1,7 +1,8 @@
 import Cookie from "cookie_js";
+import {getIsCollapse, setIsCollapse} from "../../utils/app";
 
 const state = {
-    isCollapse: Cookie.get('isCollapse')|| false
+    isCollapse: getIsCollapse()
 };
 
 const getters = {
@@ -11,7 +12,7 @@ const mutations = {
     SET_isCollapse(state) {
         state.isCollapse = !state.isCollapse;
         // sessionStorage.setItem('isCollapse',JSON.stringify(state.isCollapse))
-        Cookie.set('isCollapse', JSON.stringify(state.isCollapse));
+        setIsCollapse(state.isCollapse);
     }
 };
 

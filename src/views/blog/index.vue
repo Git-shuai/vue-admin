@@ -120,14 +120,14 @@
 <script>
     import {ref, reactive} from "@vue/composition-api";
     import addblog from "./dialog/addblog";
-    import {global} from "@/utils/global";
+    import {global} from "../../utils/global";
 
     export default {
         name: "blogIndex",
         components: {addblog},
-        setup(props,{root}) {
+        setup(props, {root}) {
             //声明
-            // const {G} =global;
+            const { confirm } = global();
             //自定义数据
             //************************************************************************************************
             //ref
@@ -205,48 +205,23 @@
 
             //回调函数
             const closeDialog = (() => {
-                dialogBlog.value=false;
+                dialogBlog.value = false;
             });
 
-            const deleteItem=(()=>{
-                root.$confirm('此操作将永久删除信息, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning',
-                    center: true
-                }).then(() => {
-                    root.$message({
-                        type: 'success',
-                        message: '删除成功!'
-                    });
-                }).catch(() => {
-                    root.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
+            const deleteItem = (() => {
+                confirm({
+                    content: "你确定要删除该信息?"
+                })
             });
-            const deleteAll = (()=>{
-                root.$confirm('此操作将永久删除你选择的信息, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning',
-                    center: true
-                }).then(() => {
-                    root.$message({
-                        type: 'success',
-                        message: '删除成功!'
-                    });
-                }).catch(() => {
-                    root.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
+            const deleteAll = (() => {
+                confirm({
+                    content: "你确定要删除你所选着的所有信息?"
+                })
             });
 
 
-            const confirmDelete=(()=>{});
+            const confirmDelete = (() => {
+            });
             //返回
             //************************************************************************************************
             return {

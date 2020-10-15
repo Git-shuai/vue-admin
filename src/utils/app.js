@@ -2,6 +2,7 @@ import cookie from "cookie_js";
 
 const adminToken="admin_toKen";
 const username="vue_admin_username";
+const isCollapse="isCollapse";
 
 export function getToken() {
     return cookie.get(adminToken);
@@ -11,7 +12,7 @@ export function setToken(token) {
     return cookie.set(adminToken,token);
 }
 
-export function removeToken(token) {
+export function removeToken() {
     return cookie.remove(adminToken);
 }
 
@@ -25,4 +26,18 @@ export function getUsername() {
 
 export function removeUsername() {
     return cookie.remove(username);
+}
+
+
+export function getIsCollapse() {
+    return cookie.get(isCollapse) === 'true';
+
+}
+
+export function setIsCollapse(value) {
+    return cookie.set(isCollapse,JSON.stringify(value));
+}
+
+export function removeIsCollapse() {
+    return cookie.remove(isCollapse);
 }
