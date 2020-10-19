@@ -4,18 +4,14 @@ import { Message } from 'element-ui';
 import {ref, reactive} from "@vue/composition-api";
 export function global() {
 
-    const confirm=((param)=>{
-        console.log(param.content)
+     const confirm=((param)=>{
         MessageBox.confirm(param.content,"提示",{
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning',
             center: true
         }).then(() => {
-           Message({
-               type: 'success',
-               message: '已删除'
-           })
+           param.fn&& param.fn(param.id || '')
         }).catch(() => {
             Message({
                 type: 'info',

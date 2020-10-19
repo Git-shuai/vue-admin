@@ -1,16 +1,16 @@
 <template>
     <div>
         <el-row :gutter="30">
-            <el-col :span="3">
+            <el-col :span="4">
                 <div class="label-wrap category">
-                    <label>类型 :</label>
+                    <label>分类 :</label>
                     <div class="wrap-content">
                         <el-select v-model="categoryValue" placeholder="请选择">
                             <el-option
-                                    v-for="item in options"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
+                                    v-for="item in options.category"
+                                    :key="item.id"
+                                    :label="item.category_name"
+                                    :value="item.id">
                             </el-option>
                         </el-select>
                     </div>
@@ -55,7 +55,7 @@
                 <el-input v-model="searchKey" placeholder="请输入内容" style="width: 100%"></el-input>
             </el-col>
 
-            <el-col :span="3">
+            <el-col :span="2">
                 <el-button type="danger" class="pull-left" style="width: 100%">查询</el-button>
             </el-col>
 
@@ -73,8 +73,8 @@
                     type="selection"
                     width="45">
             </el-table-column>
-            <el-table-column prop="title" label="标题" width="600"></el-table-column>
-            <el-table-column prop="category" label="类别" width="180"></el-table-column>
+            <el-table-column prop="title" label="标题" width="550"></el-table-column>
+            <el-table-column prop="category" label="类别" width="160"></el-table-column>
             <el-table-column prop="date" label="日期" width="250"></el-table-column>
             <el-table-column prop="user" label="作者" width="200"></el-table-column>
             <el-table-column label="操作">
@@ -118,16 +118,18 @@
 </template>
 
 <script>
-    import {ref, reactive} from "@vue/composition-api";
+    import {ref, reactive,watch, onMounted} from "@vue/composition-api";
     import addblog from "./dialog/addblog";
     import {global} from "../../utils/global";
+    import {common} from "../../api/common";
 
     export default {
         name: "blogIndex",
         components: {addblog},
         setup(props, {root}) {
             //声明
-            const { confirm } = global();
+            const {confirm} = global();
+            const {getInfoCategory,commonCategory} = common();
             //自定义数据
             //************************************************************************************************
             //ref
@@ -147,22 +149,9 @@
                 {value: "author", label: "作者"}
             ]);
 
-            const options = reactive([{
-                value: '选项1',
-                label: 'Java'
-            }, {
-                value: '选项2',
-                label: 'Python'
-            }, {
-                value: '选项3',
-                label: 'Mysql'
-            }, {
-                value: '选项4',
-                label: 'Php'
-            }, {
-                value: '选项5',
-                label: 'JavaWeb'
-            }]);
+            const options = reactive({
+                category: []
+            });
 
             const tableData = reactive([
                 {
@@ -220,8 +209,16 @@
             });
 
 
-            const confirmDelete = (() => {
+            //////////////////////////////////////////////
+            onMounted(() => {
+                getInfoCategory();
             });
+
+            watch(()=> commonCategory.item,(value)=>{
+                console.log(value);
+                options.category = value;
+            });
+
             //返回
             //************************************************************************************************
             return {
@@ -241,7 +238,7 @@
                 handleCurrentChange,
                 closeDialog,
                 deleteItem,
-                deleteAll
+                deleteAll,
             }
 
         }
