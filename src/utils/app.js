@@ -2,6 +2,7 @@ import cookie from "cookie_js";
 
 const adminToken="admin_toKen";
 const username="vue_admin_username";
+const password="vue_admin_password";
 const isCollapse="isCollapse";
 
 export function getToken() {
@@ -26,6 +27,18 @@ export function getUsername() {
 
 export function removeUsername() {
     return cookie.remove(username);
+}
+
+export function setPassword(value) {
+    return cookie.set(password,value);
+}
+
+export function getPassword() {
+    return cookie.get(password);
+}
+
+export function removePassword() {
+    return cookie.remove(password);
 }
 
 

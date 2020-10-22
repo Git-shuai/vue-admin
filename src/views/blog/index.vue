@@ -26,6 +26,8 @@
                                 v-model="dateValue"
                                 type="datetimerange"
                                 align="right"
+                                format="yyyy-MM-dd HH:mm:ss"
+                                value-format="yyyy-MM-dd HH:mm:ss"
                                 start-placeholder="开始日期"
                                 end-placeholder="结束日期"
                                 :default-time="['12:00:00', '08:00:00']">
@@ -52,11 +54,11 @@
             </el-col>
 
             <el-col :span="3">
-                <el-input v-model="searchKey" placeholder="请输入内容" style="width: 100%"></el-input>
+                <el-input v-model="searchKeyWord" placeholder="请输入内容" style="width: 100%"></el-input>
             </el-col>
 
             <el-col :span="2">
-                <el-button type="danger" class="pull-left" style="width: 100%">查询</el-button>
+                <el-button type="danger" class="pull-left" style="width: 100%" @click="getInfoList">查询</el-button>
             </el-col>
 
 
@@ -68,26 +70,27 @@
         <div class="block-space-30"></div>
 
         <!--表格-->
-        <el-table :data="tableData" border style="width: 100%">
+        <el-table :data="tableData.item" border v-loading="loadingData" style="width: 100%"
+                  @selection-change="handleSelectionChange">
             <el-table-column
                     type="selection"
                     width="45">
             </el-table-column>
             <el-table-column prop="title" label="标题" width="550"></el-table-column>
-            <el-table-column prop="category" label="类别" width="160"></el-table-column>
-            <el-table-column prop="date" label="日期" width="250"></el-table-column>
+            <el-table-column prop="categoryId" label="类别" width="160" :formatter="toCategory"></el-table-column>
+            <el-table-column prop="createDate" label="日期" :formatter="toDate" width="250"></el-table-column>
             <el-table-column prop="user" label="作者" width="200"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button
                             size="mini"
                             type="primary"
-                            @click="dialogBlog=true">编辑
+                            @click="editInfo(scope.row)">编辑
                     </el-button>
                     <el-button
                             size="mini"
                             type="danger"
-                            @click="deleteItem">删除
+                            @click="deleteItem(scope.row.id)">删除
                     </el-button>
                 </template>
             </el-table-column>
@@ -106,118 +109,186 @@
                         :page-sizes="[10, 20, 50, 100]"
                         :page-size="10"
                         layout="total,sizes,prev, pager, next,jumper"
-                        :total="1000">
+                        :total="total">
                 </el-pagination>
             </el-col>
         </el-row>
 
         <!--新增弹窗-->
-        <addblog :flag.sync="dialogBlog" @close="closeDialog"/>
-
+        <addblog :flag.sync="dialogBlog" @close="closeDialog" :category="options.category"/>
+        <!--修改弹窗-->
+        <editblog :flag.sync="dialogBlog_edit" @close="closeDialog" :category="options.category"/>
     </div>
 </template>
 
 <script>
-    import {ref, reactive,watch, onMounted} from "@vue/composition-api";
+    import {ref, reactive, watch, onMounted} from "@vue/composition-api";
     import addblog from "./dialog/addblog";
+    import editblog from "./dialog/editblog";
     import {global} from "../../utils/global";
-    import {common} from "../../api/common";
+    import {DeleteInfo, GetInfoList} from "../../api/news";
+    import {timestampToTime} from "../../utils/common";
+    // import {common} from "../../api/common";
 
     export default {
         name: "blogIndex",
-        components: {addblog},
-        setup(props, {root}) {
+        components: {addblog,editblog},
+        setup: function (props, {root}) {
             //声明
             const {confirm} = global();
-            const {getInfoCategory,commonCategory} = common();
+            // const {getInfoCategory,commonCategory} = common();
             //自定义数据
             //************************************************************************************************
             //ref
             const categoryValue = ref('');
             const searchKey = ref('title');
+            const searchKeyWord = ref('');
             //新增弹窗标记
             const dialogBlog = ref(false);
-
-
-            // reactive
+            const dialogBlog_edit = ref(false);
+            const total = ref(0);
+            const loadingData = ref(false);
+            const deleteInfoId = ref('');
             //默认时间
-            const dateValue = reactive([new Date(2020, 10, 10, 10, 10), new Date(2020, 10, 11, 10, 10)]);
+            const dateValue = ref('');
+            // reactive
+
 
             //搜索关键字
             const searchOptions = reactive([
                 {value: "title", label: "标题"},
-                {value: "author", label: "作者"}
+                {value: "id", label: "ID"}
             ]);
 
             const options = reactive({
                 category: []
             });
 
-            const tableData = reactive([
-                {
-                    title: 'Java原理',
-                    category: 'Java',
-                    date: '2020-09-12 00:00:00',
-                    user: '昝存'
-                }, {
-                    title: 'Java原理',
-                    category: 'Java',
-                    date: '2020-09-12 00:00:00',
-                    user: '昝存'
-                }, {
-                    title: 'Java原理',
-                    category: 'Java',
-                    date: '2020-09-12 00:00:00',
-                    user: '昝存'
-                }, {
-                    title: 'Java原理',
-                    category: 'Java',
-                    date: '2020-09-12 00:00:00',
-                    user: '昝存'
-                }, {
-                    title: 'Java原理',
-                    category: 'Java',
-                    date: '2020-09-12 00:00:00',
-                    user: '昝存'
-                },
-            ]);
+            const tableData = reactive({
+                item: []
+            });
+
+            const page = reactive({
+                pageNum: 1,
+                pageSize: 10
+            });
+
             //自定义函数
             //************************************************************************************************
 
             const handleSizeChange = ((value) => {
-                console.log(value)
+                page.pageSize = value;
+                getInfoList()
             });
 
             const handleCurrentChange = ((value) => {
-                console.log(value)
+                page.pageNum = value;
+                getInfoList()
             });
+
 
             //回调函数
             const closeDialog = (() => {
                 dialogBlog.value = false;
             });
 
-            const deleteItem = (() => {
-                confirm({
-                    content: "你确定要删除该信息?"
-                })
+            const deleteInfo = (() => {
+                new DeleteInfo({id: deleteInfoId.value}).then((response) => {
+                    getInfoList();
+                }).catch();
             });
-            const deleteAll = (() => {
+
+            const deleteItem = ((id) => {
+                deleteInfoId.value = [id];
                 confirm({
-                    content: "你确定要删除你所选着的所有信息?"
+                    content: "你确定要删除该信息?",
+                    fn: deleteInfo
                 })
             });
 
+            const handleSelectionChange = ((value) => {
+                let id = value.map(item => item.id);
+                deleteInfoId.value = id;
+            });
+
+            const deleteAll = (() => {
+                if (!deleteInfoId.value || deleteInfoId.value.length === 0) {
+                    root.$message({
+                        message: "请选择你要删除的数据",
+                        type: "error"
+                    });
+                    return false;
+                }
+                confirm({
+                    content: "你确定要删除你所选着的所有信息?",
+                    fn: deleteInfo
+                })
+            });
+            //获取Category
+            const getInfoCategory = (() => {
+                root.$store.dispatch('Common/getInfoCategory').then((response) => {
+                    options.category = response;
+                }).catch();
+            });
+
+            const format = (() => {
+                let data = {
+                    pageNumber: page.pageNum,
+                    pageSize: page.pageSize
+                };
+                if (categoryValue.value) {
+                    data.categoryId = categoryValue.value
+                }
+                if (dateValue.value.length > 0) {
+                    data.startTiem = dateValue.value[0];
+                    data.endTime = dateValue.value[1];
+                }
+                if (searchKeyWord.value) {
+                    data[searchKey.value] = searchKeyWord.value;
+                }
+                return data;
+            });
+
+            //获取列表
+            const getInfoList = (() => {
+                let data = format();
+                loadingData.value = true;
+                new GetInfoList(data).then((response) => {
+                    let resData = response.data.data;
+                    tableData.item = resData.data;
+                    total.value = resData.total;
+                    loadingData.value = false;
+                }).catch(() => {
+                    loadingData.value = false;
+                });
+            });
+
+            const toDate = ((row, column, cellValue, index) => {
+                return timestampToTime(row.createDate)
+            });
+
+            const toCategory = ((row) => {
+                let categoryId = row.categoryId;
+                let categoryData = options.category.filter(item => item.id === categoryId)[0];
+                return categoryData.category_name;
+            });
+
+            //修改
+            const editInfo=((value)=>{
+                console.log(value);
+                dialogBlog_edit.value=true;
+            });
 
             //////////////////////////////////////////////
             onMounted(() => {
                 getInfoCategory();
+                getInfoList();
             });
 
-            watch(()=> commonCategory.item,(value)=>{
-                console.log(value);
-                options.category = value;
-            });
+            // watch(()=> commonCategory.item,(value)=>{
+            //     console.log(value);
+            //     options.category = value;
+            // });
 
             //返回
             //************************************************************************************************
@@ -226,10 +297,16 @@
                 categoryValue,
                 dialogBlog,
                 searchKey,
+                total,
+                page,
+                loadingData,
+                deleteInfoId,
+                dateValue,
+                searchKeyWord,
+                dialogBlog_edit,
 
                 //reactive
                 options,
-                dateValue,
                 searchOptions,
                 tableData,
 
@@ -239,6 +316,12 @@
                 closeDialog,
                 deleteItem,
                 deleteAll,
+                getInfoList,
+                toDate,
+                toCategory,
+                deleteInfo,
+                handleSelectionChange,
+                editInfo
             }
 
         }

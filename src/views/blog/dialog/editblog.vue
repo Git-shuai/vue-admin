@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="新增" :visible.sync="dialog_info_flag" @close="close" @opened="openDialog">
+    <el-dialog title="修改" :visible.sync="dialog_info_flag" @close="close" @opened="openDialog">
         <el-form :model="form" :ref="form">
 
             <el-form-item label="标题: "  :label-width="formLabelWidth">
@@ -31,7 +31,7 @@
     import {AddNews} from "../../../api/news";
 
     export default {
-        name: "addblog",
+        name: "editblog",
         //单向数据流
         props: {
             flag: {
@@ -66,7 +66,7 @@
 
             //函数
             //*******************************************************************************************
-            watch(() => dialog_info_flag.value = props.flag);
+            watch(() => {dialog_info_flag.value = props.flag});
 
             const restForm=(()=>{
                 form.content='';

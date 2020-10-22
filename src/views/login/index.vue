@@ -41,7 +41,7 @@
                     </el-row>
 
                 </el-form-item>
-
+                <el-checkbox v-model="rememberme" >记住密码</el-checkbox>
                 <el-form-item>
                     <el-button type="danger" @click="submitForm('ruleForm')" class="login-btn block"
                                :disabled="loginBtnStatus">{{ menuTab[0].current ? "登录":
@@ -84,10 +84,8 @@
             ]);
             // console.log(menuTab);
 
-            //基本数据类型用 ref
-            const isActive = ref(true);
-            // console.log(isActive.value);
 
+            const rememberme = ref(true);
             //验证码按钮状态
             const codeBtnStatus = reactive({
                 status: false,
@@ -172,6 +170,11 @@
             });
 //******************************************************************************************************************
             //自定义函数开始
+
+            const resetRemember = (() => {
+                rememberme.value=false;
+                console.log(rememberme.value)
+            });
             //高光效果
             const toggleMenu = (data => {
                 menuTab.forEach(elem => {
@@ -309,7 +312,9 @@
                 codeBtnStatus,
                 countDown,
                 timer,
-                restCodeBtn
+                restCodeBtn,
+                rememberme,
+                resetRemember
             }
         }
     };

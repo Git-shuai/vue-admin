@@ -11,7 +11,6 @@ export function common() {
         new GetCategory().then((response)=>{
             commonCategory.item=response.data.data.data;
         }).catch((error)=>{
-
         });
     });
 
