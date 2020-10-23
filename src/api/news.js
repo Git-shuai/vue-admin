@@ -43,6 +43,20 @@ export function GetCategory(data) {
 }
 
 /**
+ * 获取所有分类（包含子级）
+ * @param data
+ * @returns {*}
+ * @constructor
+ */
+export function GetAllCategory(data) {
+    return service.request({
+        method: "post",
+        url: "/news/getCategoryAll/ ",
+        data: data
+    });
+}
+
+/**
  * 删除一级分类
  * @param data
  * @returns {*}
@@ -94,6 +108,34 @@ export function DeleteInfo(data) {
     return service.request({
         method: "post",
         url: "/news/deleteInfo/",
+        data: data
+    });
+}
+
+/**
+ * 修改信息
+ * @param data
+ * @returns {*|http.ClientRequest|ClientHttp2Stream|Promise<AxiosResponse<T>>}
+ * @constructor
+ */
+export function EditInfo(data) {
+    return service.request({
+        method: "post",
+        url: "/news/editInfo/",
+        data: data
+    });
+}
+
+/**
+ * 添加子级分类
+ * @param data
+ * @returns {*|http.ClientRequest|ClientHttp2Stream|Promise<AxiosResponse<T>>}
+ * @constructor
+ */
+export function AddChildrenCategory(data) {
+    return service.request({
+        method: "post",
+        url: "/news/addChildrenCategory/",
         data: data
     });
 }

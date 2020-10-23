@@ -2,12 +2,12 @@
     <el-dialog title="修改" :visible.sync="dialog_info_flag" @close="close" @opened="openDialog">
         <el-form :model="form" :ref="form">
 
-            <el-form-item label="标题: "  :label-width="formLabelWidth">
-                <el-input v-model="form.title"  placeholder="请输入标题"></el-input>
+            <el-form-item label="标题: " :label-width="formLabelWidth">
+                <el-input v-model="form.title" placeholder="请输入标题"></el-input>
             </el-form-item>
 
             <el-form-item label="类型: " :label-width="formLabelWidth">
-                <el-select v-model="form.categoryId"  placeholder="请选择类型">
+                <el-select v-model="form.categoryId" placeholder="请选择类型">
                     <el-option v-for="item in categoryOption.item"
                                :key="item.id"
                                :label="item.category_name"
@@ -15,12 +15,12 @@
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item label="内容: "  :label-width="formLabelWidth">
-                <el-input type="textarea" v-model="form.content"  placeholder="请输入内容"></el-input>
+            <el-form-item label="内容: " :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="form.content" placeholder="请输入内容"></el-input>
             </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-            <el-button @click="close" >取 消</el-button>
+            <el-button @click="close">取 消</el-button>
             <el-button type="primary" @click="submit">确 定</el-button>
         </div>
     </el-dialog>
@@ -28,7 +28,7 @@
 
 <script>
     import {reactive, watch, ref} from "@vue/composition-api";
-    import {AddNews} from "../../../api/news";
+    import {AddNews, EditInfo} from "../../../api/news";
 
     export default {
         name: "editblog",
@@ -42,6 +42,10 @@
                 type: Array,
                 default: () => {
                 }
+            },
+            editData: {
+                type: Object,
+                default: ()=>{}
             }
         },
 
@@ -66,46 +70,50 @@
 
             //函数
             //*******************************************************************************************
-            watch(() => {dialog_info_flag.value = props.flag});
+            watch(() => {
+                dialog_info_flag.value = props.flag
+            });
 
-            const restForm=(()=>{
-                form.content='';
-                form.categoryId='';
-                form.title='';
+            const restForm = (() => {
+                form.content = '';
+                form.categoryId = '';
+                form.title = '';
             });
             const close = (() => {
                 dialog_info_flag.value = false;
                 //回调是不需要进行逻辑
 
                 emit("update:flag", false);
-                // root.$emit('close',false);
+                emit("close");
+                // root.$emit('close');
                 restForm();
             });
 
             const openDialog = (() => {
                 categoryOption.item = props.category;
+
+                form.content=props.editData.content;
+                form.title=props.editData.title;
+                form.categoryId=props.editData.categoryId;
+                console.log(props.editData);
             });
             const submit = (() => {
                 let data = {
+                    id: props.editData.id,
                     title: form.title,
                     categoryId: form.categoryId,
                     content: form.content
                 };
-                if (form.title===''){
-                    root.$message({
-                        message: "标题不能为空",
-                        type: 'error'
-                    });
-                    return false;
-                }
                 submitLoading.value = true;
-                AddNews(data).then((response) => {
+                EditInfo(data).then((response) => {
                     root.$message({
                         message: response.data.message,
                         type: 'success'
                     });
                     submitLoading.value = false;
                     restForm();
+                    close();
+
                 }).catch((error) => {
                     submitLoading.value = false;
                 });

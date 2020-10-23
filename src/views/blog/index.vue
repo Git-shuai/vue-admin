@@ -115,9 +115,9 @@
         </el-row>
 
         <!--新增弹窗-->
-        <addblog :flag.sync="dialogBlog" @close="closeDialog" :category="options.category"/>
+        <addblog :flag.sync="dialogBlog" @close="getInfoList" :category="options.category"/>
         <!--修改弹窗-->
-        <editblog :flag.sync="dialogBlog_edit" @close="closeDialog" :category="options.category"/>
+        <editblog :flag.sync="dialogBlog_edit" @close="getInfoList" :editData="editDataId.item" :category="options.category"/>
     </div>
 </template>
 
@@ -132,7 +132,7 @@
 
     export default {
         name: "blogIndex",
-        components: {addblog,editblog},
+        components: {addblog, editblog},
         setup: function (props, {root}) {
             //声明
             const {confirm} = global();
@@ -152,7 +152,9 @@
             //默认时间
             const dateValue = ref('');
             // reactive
-
+            const editDataId = reactive({
+                item: {}
+            });
 
             //搜索关键字
             const searchOptions = reactive([
@@ -274,9 +276,10 @@
             });
 
             //修改
-            const editInfo=((value)=>{
-                console.log(value);
-                dialogBlog_edit.value=true;
+            const editInfo = ((value) => {
+                // console.log(value.toString());
+                editDataId.item=value;
+                dialogBlog_edit.value = true;
             });
 
             //////////////////////////////////////////////
@@ -304,6 +307,7 @@
                 dateValue,
                 searchKeyWord,
                 dialogBlog_edit,
+                editDataId,
 
                 //reactive
                 options,

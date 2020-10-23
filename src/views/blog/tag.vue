@@ -9,24 +9,37 @@
                     <div class="category-wrap">
                         <div class="category" v-for="item in category.item" :key="item.id">
                             <h4>
-                                <svg-icon icon-class="minus" class-name="minus"></svg-icon>
-                                {{item.category_name}}
+                                <div style="display: inline" @click="svgClick(item.id)">
+                                    <svg-icon :icon-class="(item.id===svg_btn)? 'below':'right'"
+                                              :class-name="(item.id===svg_btn)? 'below':'right'"></svg-icon>
+                                    {{item.category_name}}
+                                </div>
                                 <div class="btn-group pull-right">
                                     <el-button size="mini" type="primary" round
                                                @click="editCategory({ categoryObject : item ,
                                                                        type: 'category_1_edit' })">编辑
                                     </el-button>
-                                    <el-button size="mini" type="success" round>添加子级</el-button>
+                                    <el-button size="mini" type="success" round @click="handlerAddchildren({ categoryObject : item ,
+                                                                       type: 'category_1_addChild' })">添加子级
+                                    </el-button>
                                     <el-button size="mini" type="danger" round @click="deleteCategory(item.id)">删除
                                     </el-button>
                                 </div>
                             </h4>
-                            <ul v-if="item.children">
-                                <li v-for="children in item.children" :key="children.id">
+                            <ul>
+                                <li v-for="children in item.children" :key="children.id"
+                                    v-if="svg_btn===children.parent_id">
                                     {{children.category_name}}
                                     <div class="btn-group pull-right">
-                                        <el-button size="mini" type="primary" round>编辑</el-button>
-                                        <el-button size="mini" type="danger" round>删除</el-button>
+                                        <el-button size="mini" type="primary" round @click="editChildrenCategory({
+                                                                                                categoryObject : children ,
+                                                                                                categoryparent: item,
+                                                                                                type: 'category_1_edit' })">
+                                            编辑
+                                        </el-button>
+                                        <el-button size="mini" type="danger" round @click="deleteCategory(children.id)">
+                                            删除
+                                        </el-button>
                                     </div>
                                 </li>
                             </ul>
@@ -60,7 +73,7 @@
 </template>
 
 <script>
-    import {AddFirstCategory, DelCategory, EditFirstCategory, GetCategory} from "../../api/news";
+    import {AddChildrenCategory, AddFirstCategory, DelCategory, EditFirstCategory, GetCategory} from "../../api/news";
     import {onMounted, reactive, ref, watch} from "@vue/composition-api";
     import {global} from "../../utils/global";
     import {common} from "../../api/common";
@@ -70,7 +83,7 @@
         name: "tag",
         setup: function (props, {refs, root}) {
             const {confirm} = global();
-            const {getInfoCategory,commonCategory} = common();
+            const {commonCategory, getInfoCategoryAll} = common();
             //ref
             //***************************************************************************************************
             const category_1 = ref(true);
@@ -81,6 +94,9 @@
             const category_3_disabled = ref(true);
             const deleteId = ref('');
             const submit_btn_type = ref('');
+            //收放的标记
+            const svg_btn_status = ref(true);
+            const svg_btn = ref('');
 
 
             //reactive
@@ -89,6 +105,7 @@
                 categoryName: '',
                 setcategoryName: ''
             });
+
             const category = reactive({
                 item: [],
                 current: []
@@ -97,12 +114,24 @@
 
             //函数
             //***************************************************************************************************
+            const svgClick = ((value) => {
+
+                if (svg_btn_status.value) {
+                    svg_btn.value = value;
+                } else {
+                    svg_btn.value = '';
+                }
+                console.log(value);
+                svg_btn_status.value = !svg_btn_status.value;
+            });
             const submit = (() => {
                 if (submit_btn_type.value === 'category_1_add') {
                     //添加
                     addCategory();
                 } else if (submit_btn_type.value === 'category_1_edit') {
                     editFirstCategory();
+                } else if (submit_btn_type.value === 'category_1_addChild') {
+                    addChildrenCategory();
                 } else {
                 }
 
@@ -123,6 +152,7 @@
                     categoryName: categoryForm.categoryName
                 };
                 new AddFirstCategory(data).then((response) => {
+
                     if (response.data.resCode === 0) {
                         root.$message({
                             message: response.data.message,
@@ -131,13 +161,40 @@
                     }
                     category.item.push(response.data.data);
                     submit_loading.value = false;
+                    categoryForm.categoryName = '';
+                    categoryForm.setcategoryName = '';
+                    getInfoCategoryAll();
+                }).catch((error) => {
+                    submit_loading.value = false;
+                });
+
+            });
+            //添加子级分类
+            const addChildrenCategory = (() => {
+                if (!categoryForm.setcategoryName) {
+                    root.$message({
+                        message: "子级分类名称不能为空！",
+                        type: "error"
+                    });
+                    return false;
+                }
+                submit_loading.value = true;
+                let data = {
+                    categoryName: categoryForm.setcategoryName,
+                    parentId: category.current.id
+                };
+                AddChildrenCategory(data).then((response) => {
+                    console.log(response.data.data);
+                    root.$message({
+                        message: response.data.message,
+                        type: "success"
+                    });
+                    submit_loading.value = false;
                     // refs.categoryForm.resetFields();
                     categoryForm.categoryName = '';
                     categoryForm.setcategoryName = '';
-                }).catch((error) => {
-                    submit_loading.value = false;
-                    refs.categoryForm.resetFields();
-                });
+                    getInfoCategoryAll();
+                }).catch();
             });
 
             //修改
@@ -147,27 +204,36 @@
                     return false;
                 }
 
-
                 let data = {
                     id: category.current.id,
-                    categoryName: categoryForm.categoryName
+                    categoryName: !category_1_disabled.value ? categoryForm.categoryName : categoryForm.setcategoryName
                 };
                 new EditFirstCategory(data).then((response) => {
                     root.$message({message: "修改成功", type: "success"});
                     categoryForm.categoryName = '';
                     category.current = [];
-                    getCategory();
+                    getInfoCategoryAll();
                 }).catch();
             });
 
             //按钮
             const addFirst = ((param) => {
                 submit_btn_type.value = param.type;
-                console.log(submit_btn_type.value);
+                // console.log(submit_btn_type.value);
                 category_1.value = true;
                 category_2.value = false;
                 category_1_disabled.value = false;
                 category_3_disabled.value = false;
+            });
+
+            const handlerAddchildren = ((param) => {
+                submit_btn_type.value = param.type;
+                category_2.value = true;
+                category_2_disabled.value = false;
+                category_1_disabled.value = true;
+                category_3_disabled.value = false;
+                category.current = param.categoryObject;
+                categoryForm.categoryName = param.categoryObject.category_name
             });
 
             // //获取
@@ -181,6 +247,7 @@
             //删除
             const deleteCategory = ((dataID) => {
                 deleteId.value = dataID;
+                console.log(dataID);
                 confirm({
                     content: "你确定要删除该一级分类?",
                     fn: delCategory
@@ -192,11 +259,12 @@
                     root.$message({message: "删除成功", type: "success"});
                     // getCategory();
                     //第一种 两个参数删除 三个是修改，新增
-                    let index = category.item.findIndex((item) => item.id === deleteId.value);
-                    category.item.splice(index, 1);
+                    // let index = category.item.findIndex((item) => item.id === deleteId.value);
+                    // category.item.splice(index, 1);
                     //第二种
                     // let newData = category.item.filter((item) => item.id !== deleteId.value);
                     // category.item=newData;
+                    getInfoCategoryAll();
                 }).catch((error) => {
                     getCategory();
                 });
@@ -211,16 +279,28 @@
                 categoryForm.categoryName = param.categoryObject.category_name;
                 submit_btn_type.value = param.type;
                 category.current = param.categoryObject;
-                console.log(category.current);
+                // console.log(category.current);
+            });
+
+            const editChildrenCategory = ((param) => {
+                category_2.value = true;
+                category_1.value = true;
+                category_1_disabled.value = true;
+                category_2_disabled.value = false;
+                category_3_disabled.value = false;
+                categoryForm.categoryName = param.categoryparent.category_name;
+                categoryForm.setcategoryName = param.categoryObject.category_name;
+                submit_btn_type.value = param.type;
+                category.current = param.categoryObject;
             });
 
             //生命周期
             //***************************************************************************************************
             onMounted(() => {
-                getInfoCategory();
+                getInfoCategoryAll();
             });
-            watch(()=> commonCategory.item,(value)=>{
-                console.log(value);
+            watch(() => commonCategory.item, (value) => {
+                // console.log(value);
                 category.item = value;
             });
 
@@ -237,19 +317,25 @@
                 category_3_disabled,
                 deleteId,
                 submit_btn_type,
+                svg_btn_status,
+                svg_btn,
 
                 //reactive
                 categoryForm,
                 category,
 
                 //函数
+                svgClick,
                 submit,
                 addCategory,
                 addFirst,
                 deleteCategory,
                 delCategory,
                 editCategory,
-                editFirstCategory
+                editFirstCategory,
+                handlerAddchildren,
+                addChildrenCategory,
+                editChildrenCategory
             }
 
         }
@@ -298,7 +384,7 @@
 
         svg {
             position: absolute;
-            left: 15px;
+            left: 14px;
             top: 15px;
             background-color: #fff;
             font-size: 17px;
@@ -326,8 +412,11 @@
                 .btn-group {
                     display: block;
                 }
-
                 background-color: #f3f3f3;
+                svg{
+                    background-color: #f3f3f3;
+                    @include webkit(transition, all .7s ease 0s);
+                }
             }
         }
 

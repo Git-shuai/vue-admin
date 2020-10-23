@@ -78,6 +78,7 @@
                 //回调是不需要进行逻辑
 
                 emit("update:flag", false);
+                emit("close");
                 // root.$emit('close',false);
                 restForm();
             });
@@ -105,6 +106,7 @@
                         type: 'success'
                     });
                     submitLoading.value = false;
+                    close();
                     restForm();
                 }).catch((error) => {
                     submitLoading.value = false;
