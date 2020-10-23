@@ -77,7 +77,7 @@
                     width="45">
             </el-table-column>
             <el-table-column prop="title" label="标题" width="550"></el-table-column>
-            <el-table-column prop="categoryId" label="类别" width="160" :formatter="toCategory.category_name"></el-table-column>
+            <el-table-column prop="categoryId" label="类别" width="160" :formatter="toCategory"></el-table-column>
             <el-table-column prop="createDate" label="日期" :formatter="toDate" width="250"></el-table-column>
             <el-table-column prop="user" label="作者" width="200"></el-table-column>
             <el-table-column label="操作">
@@ -271,8 +271,10 @@
 
             const toCategory = ((row) => {
                 let categoryId = row.categoryId;
+                // console.log(categoryId);
                 let categoryData = options.category.filter(item => item.id === categoryId)[0];
-                return categoryData;
+                // console.log(categoryData);
+                return categoryData.category_name;
             });
 
             //修改
