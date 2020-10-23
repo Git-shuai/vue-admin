@@ -15,7 +15,7 @@
                         <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon"/>
                         <span slot="title">{{item.meta.name}}</span>
                     </template>
-                    <el-menu-item v-for="subItem in item.children" :key="subItem.id" :index="subItem.path">
+                    <el-menu-item v-for="subItem in item.children" v-if="!subItem.hidden" :key="subItem.id" :index="subItem.path">
                         {{subItem.meta.name}}
                     </el-menu-item>
                 </el-submenu>

@@ -79,19 +79,14 @@
             <el-table-column prop="title" label="标题" width="550"></el-table-column>
             <el-table-column prop="categoryId" label="类别" width="160" :formatter="toCategory"></el-table-column>
             <el-table-column prop="createDate" label="日期" :formatter="toDate" width="250"></el-table-column>
-            <el-table-column prop="user" label="作者" width="200"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button
-                            size="mini"
-                            type="primary"
-                            @click="editInfo(scope.row)">编辑
-                    </el-button>
-                    <el-button
-                            size="mini"
-                            type="danger"
-                            @click="deleteItem(scope.row.id)">删除
-                    </el-button>
+                    <el-button size="mini" type="primary" @click="editInfo(scope.row)">编辑</el-button>
+<!--                    <router-link :to="{name:'InfoDetailed',query:{id: scope.row.id}}">-->
+<!--                        <el-button size="mini" class="detailed" type="primary">编辑详情</el-button>-->
+<!--                    </router-link>-->
+                    <el-button size="mini" class="detailed" type="primary" @click="detailed(scope.row)">编辑详情</el-button>
+                    <el-button size="mini" type="danger" @click="deleteItem(scope.row.id)">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -117,7 +112,8 @@
         <!--新增弹窗-->
         <addblog :flag.sync="dialogBlog" @close="getInfoList" :category="options.category"/>
         <!--修改弹窗-->
-        <editblog :flag.sync="dialogBlog_edit" @close="getInfoList" :editData="editDataId.item" :category="options.category"/>
+        <editblog :flag.sync="dialogBlog_edit" @close="getInfoList" :editData="editDataId.item"
+                  :category="options.category"/>
     </div>
 </template>
 
@@ -280,8 +276,18 @@
             //修改
             const editInfo = ((value) => {
                 // console.log(value.toString());
-                editDataId.item=value;
+                editDataId.item = value;
                 dialogBlog_edit.value = true;
+            });
+
+            const detailed=((row)=>{
+                root.$router.push({
+                    name: 'InfoDetailed',
+                    params: {
+                        id: row.id,
+                        title: row.title
+                    }
+                })
             });
 
             //////////////////////////////////////////////
@@ -327,7 +333,8 @@
                 toCategory,
                 deleteInfo,
                 handleSelectionChange,
-                editInfo
+                editInfo,
+                detailed
             }
 
         }
@@ -349,6 +356,10 @@
         &.key-word {
             @include labelDemo(left, 70, 40);
         }
+    }
+
+    .detailed {
+        margin: 0 12px;
     }
 
 </style>
