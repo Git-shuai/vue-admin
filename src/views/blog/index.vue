@@ -283,9 +283,8 @@
             const detailed=((row)=>{
                 root.$router.push({
                     name: 'InfoDetailed',
-                    params: {
-                        id: row.id,
-                        title: row.title
+                    query: {
+                        id: row.id
                     }
                 })
             });
