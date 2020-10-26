@@ -75,6 +75,17 @@ const routes = [
                 },
                 component: () => import("../views/blog/tag.vue")
             }
+            ,
+            {
+                path: "/infoDetailed",
+                name: "InfoDetailed",
+                hidden: true,
+                meta: {
+                    name: "文章详情",
+                    icon: ""
+                },
+                component: () => import("../views/blog/infoDetailed.vue")
+            }
         ]
     },
     {
