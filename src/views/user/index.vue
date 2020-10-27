@@ -91,14 +91,15 @@
                             slotName: "operation"
                         }
                     ],
-                    requestUrl: {
+                    requestData: {
                         url: "getUserList",
                         method: "post",
                         data: {
                             pageNumber: 1,
                             pageSize: 10
                         }
-                    }   //请求URL
+                    } ,  //请求URL
+                    pagination: true
 
                 }
             });
