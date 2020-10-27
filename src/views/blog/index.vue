@@ -40,15 +40,16 @@
                 <div class="label-wrap key-word">
                     <label>关键字 :</label>
                     <div class="wrap-content">
-                        <el-select v-model="searchKey">
-                            <el-option
-                                    style="width: 100%"
-                                    v-for="item in searchOptions"
-                                    :key="item.id"
-                                    :value="item.value"
-                                    :label="item.label">
-                            </el-option>
-                        </el-select>
+                        <SelectVue :config="data.configOption"></SelectVue>
+                        <!--                        <el-select v-model="searchKey">-->
+                        <!--                            <el-option-->
+                        <!--                                    style="width: 100%"-->
+                        <!--                                    v-for="item in searchOptions"-->
+                        <!--                                    :key="item.id"-->
+                        <!--                                    :value="item.value"-->
+                        <!--                                    :label="item.label">-->
+                        <!--                            </el-option>-->
+                        <!--                        </el-select>-->
                     </div>
                 </div>
             </el-col>
@@ -82,9 +83,9 @@
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button size="mini" type="primary" @click="editInfo(scope.row)">编辑</el-button>
-<!--                    <router-link :to="{name:'InfoDetailed',query:{id: scope.row.id}}">-->
-<!--                        <el-button size="mini" class="detailed" type="primary">编辑详情</el-button>-->
-<!--                    </router-link>-->
+                    <!--                    <router-link :to="{name:'InfoDetailed',query:{id: scope.row.id}}">-->
+                    <!--                        <el-button size="mini" class="detailed" type="primary">编辑详情</el-button>-->
+                    <!--                    </router-link>-->
                     <el-button size="mini" class="detailed" type="primary" @click="detailed(scope.row)">编辑详情</el-button>
                     <el-button size="mini" type="danger" @click="deleteItem(scope.row.id)">删除</el-button>
                 </template>
@@ -98,6 +99,7 @@
             </el-col>
             <el-col :span="12">
                 <el-pagination
+                        class="pull-right"
                         background
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
@@ -118,6 +120,7 @@
 </template>
 
 <script>
+    import SelectVue from "@c/select";
     import {ref, reactive, watch, onMounted} from "@vue/composition-api";
     import addblog from "./dialog/addblog";
     import editblog from "./dialog/editblog";
@@ -128,7 +131,7 @@
 
     export default {
         name: "blogIndex",
-        components: {addblog, editblog},
+        components: {addblog, editblog,SelectVue},
         setup: function (props, {root}) {
             //声明
             const {confirm} = global();
@@ -150,6 +153,11 @@
             // reactive
             const editDataId = reactive({
                 item: {}
+            });
+            const data = reactive({
+                configOption: {
+                    init: ["id", "title"]
+                }
             });
 
             //搜索关键字
@@ -280,7 +288,7 @@
                 dialogBlog_edit.value = true;
             });
 
-            const detailed=((row)=>{
+            const detailed = ((row) => {
                 root.$router.push({
                     name: 'InfoDetailed',
                     query: {
@@ -315,6 +323,7 @@
                 searchKeyWord,
                 dialogBlog_edit,
                 editDataId,
+                data,
 
                 //reactive
                 options,
