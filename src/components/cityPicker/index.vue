@@ -32,7 +32,7 @@
                 </el-select>
             </el-col>
             <el-col :span="6">
-                <el-select v-model="data.streetValue" @change="handleArea">
+                <el-select v-model="data.streetValue">
                     <el-option
                             v-for="item in data.streetData"
                             :key="item.STREET_CODE"
@@ -81,6 +81,12 @@
              * 选择省份后，获取城市
              */
             const handleProvince = ((value) => {
+                data.cityValue = '';
+                data.cityData=[];
+                data.areaValue = '';
+                data.areaData=[];
+                data.streetValue = '';
+                data.streetData=[];
                 let requestData = {
                     type: "city",
                     province_code: value
@@ -88,12 +94,17 @@
                 GetCityPicker(requestData).then((response) => {
                     data.cityData = response.data.data.data;
                 }).catch();
+
             });
 
             /**
              * 选择城市后，获取区
              */
             const handleCity = ((value) => {
+                data.areaValue = '';
+                data.areaData=[];
+                data.streetValue = '';
+                data.streetData=[];
                 let requestData = {
                     type: "area",
                     city_code: value
@@ -107,6 +118,8 @@
              * 选择区后，获取街道
              */
             const handleArea = ((value) => {
+                data.streetValue = '';
+                data.streetData=[];
                 let requestData = {
                     type: "street",
                     area_code: value
@@ -114,6 +127,13 @@
                 GetCityPicker(requestData).then((response) => {
                     data.streetData = response.data.data.data;
                 }).catch();
+            });
+
+            const resetCity = (() => {
+                data.provinceValue = '';
+                data.cityValue = '';
+                data.areaValue = '';
+                data.streetValue = '';
             });
 
             getProvince();
@@ -125,7 +145,8 @@
                 getProvince,
                 handleProvince,
                 handleCity,
-                handleArea
+                handleArea,
+                resetCity
             }
         }
     }
