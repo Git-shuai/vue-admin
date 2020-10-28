@@ -58,3 +58,17 @@ export function LoadTableData(data) {
         data: data.data || {}
     });
 }
+
+/**
+ * 获取省份
+ * @param data
+ * @returns {*|http.ClientRequest|ClientHttp2Stream|Promise<AxiosResponse<T>>}
+ * @constructor
+ */
+export function GetCityPicker(data) {
+    return service.request({
+        method: "post",
+        url: "/cityPicker/",
+        data: data
+    });
+}

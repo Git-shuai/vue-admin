@@ -23,7 +23,7 @@
 
 
             <el-col :span="4">
-                <el-button type="danger">新增</el-button>
+                <el-button type="danger" @click="data.dialogAdd=true">新增</el-button>
             </el-col>
         </el-row>
         <div class="block-space-30"></div>
@@ -35,8 +35,8 @@
                 <el-button size="small" type="danger" @click="operation(slotData.data)">删除</el-button>
                 <el-button size="small" type="primary">编辑</el-button>
             </template>
-
         </TableVue>
+        <DialogAdd :flag.sync="data.dialogAdd"/>
     </div>
 </template>
 
@@ -44,13 +44,16 @@
     import SelectVue from "@c/select";
     import TableVue from "@c/table";
     import {reactive} from "@vue/composition-api";
+    import DialogAdd from "./dialog/add";
 
     export default {
         name: "index",
-        components: {SelectVue, TableVue},
+        components: {SelectVue, TableVue,DialogAdd},
         setup(props, {root}) {
 
             const data = reactive({
+                //dialogAdd
+                dialogAdd: false,
                 //下拉选框
                 configOption: {
                     init: ["name", "email", "phone"]
