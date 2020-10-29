@@ -1,24 +1,36 @@
 <template>
-    <el-dialog title="新增" :visible.sync="dialog_info_flag" @close="close" @opened="openDialog">
+    <el-dialog title="新增" :visible.sync="data.dialog_info_flag" @close="close" @opened="openDialog">
         <el-form :model="form" :ref="form">
-
-            <el-form-item label="用户名: " :label-width="formLabelWidth">
+            <el-form-item label="用户名: " :label-width="data.formLabelWidth">
                 <el-input placeholder="请输入内容"></el-input>
             </el-form-item>
-            <el-form-item label="姓名: " :label-width="formLabelWidth">
+            <el-form-item label="姓名: " :label-width="data.formLabelWidth">
                 <el-input placeholder="请输入内容"></el-input>
             </el-form-item>
-            <el-form-item label="手机号: " :label-width="formLabelWidth">
+            <el-form-item label="手机号: " :label-width="data.formLabelWidth">
                 <el-input placeholder="请输入内容"></el-input>
             </el-form-item>
-            <el-form-item label="地区: " :label-width="formLabelWidth">
-                <cityPicker></cityPicker>
+            <el-form-item label="地区: " :label-width="data.formLabelWidth">
+                <cityPicker :cityPickerData.sync="data.cityPickerData"></cityPicker>
             </el-form-item>
-            <el-form-item label="是否启用: " :label-width="formLabelWidth">
-                <el-input></el-input>
+            <el-form-item label="是否启用: " :label-width="data.formLabelWidth">
+                <div style="margin-top: 8px">
+                    <el-switch
+                            v-model="data.switchStatus"
+                            style="display: block"
+                            active-color="#13ce66"
+                            inactive-color="#ff4949"
+                            active-text="正常"
+                            inactive-text="禁用">
+                    </el-switch>
+                </div>
             </el-form-item>
-            <el-form-item label="角色: " :label-width="formLabelWidth">
-                <el-input></el-input>
+            <el-form-item label="角色: " :label-width="data.formLabelWidth">
+                <el-checkbox-group v-model="data.checkboxRole" @change="checkboxChange">
+                    <el-checkbox value="1" label="超管"></el-checkbox>
+                    <el-checkbox value="2" label="VIP"></el-checkbox>
+                    <el-checkbox value="3" label="普通用户"></el-checkbox>
+                </el-checkbox-group>
             </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -48,14 +60,16 @@
                 }
             }
         },
-
-        setup(props, {emit, root}) {
+        setup: function (props, {emit, root}) {
             //*******************************************************************************************
-            //ref
-            const dialog_info_flag = ref(false);
-            const formLabelWidth = ref('80px');
-
-            const data = reactive({});
+            const data = reactive({
+                cityPickerData: {},
+                dialog_info_flag: false,
+                formLabelWidth: '80px',
+                submitLoading: false,
+                switchStatus: true,
+                checkboxRole: []
+            });
 
             //*******************************************************************************************
             //reactive
@@ -67,11 +81,20 @@
             const categoryOption = reactive({
                 item: []
             });
-            const submitLoading = ref(false);
 
             //函数
             //*******************************************************************************************
-            watch(() => dialog_info_flag.value = props.flag);
+            watch(() => data.dialog_info_flag = props.flag);
+
+            /**
+             *  选择checkboxChange改变时改变绑定的值
+             */
+            const checkboxChange = ((value) => {
+                data.checkboxRole = [];
+                let number = value.length-1;
+                data.checkboxRole[0] = value[number];
+                console.log(data.checkboxRole[0])
+            });
 
             const restForm = (() => {
                 form.content = '';
@@ -79,7 +102,7 @@
                 form.title = '';
             });
             const close = (() => {
-                dialog_info_flag.value = false;
+                data.dialog_info_flag = false;
                 //回调是不需要进行逻辑
 
                 emit("update:flag", false);
@@ -104,29 +127,24 @@
                     });
                     return false;
                 }
-                submitLoading.value = true;
+                data.submitLoading = true;
                 AddNews(data).then((response) => {
                     root.$message({
                         message: response.data.message,
                         type: 'success'
                     });
-                    submitLoading.value = false;
+                    data.submitLoading = false;
                     close();
                     restForm();
                 }).catch((error) => {
-                    submitLoading.value = false;
+                    data.submitLoading = false;
                 });
 
             });
             //*******************************************************************************************
             //return
             return {
-                //ref
-                dialog_info_flag,
-                formLabelWidth,
                 categoryOption,
-                submitLoading,
-
                 //reactive
                 data,
                 form,
@@ -135,7 +153,8 @@
                 close,
                 openDialog,
                 submit,
-                restForm
+                restForm,
+                checkboxChange
             }
         }
     }
