@@ -7,7 +7,7 @@ const whiteListRouter =['/login'];
 
 
 router.beforeEach((to, from, next)=>{
-    if (getToken()){
+    /*if (getToken()){
         if (to.path==='/login'){
             removeToken();
             removeUsername();
@@ -24,7 +24,8 @@ router.beforeEach((to, from, next)=>{
             next('/login')
         }
 
-    }
+    }*/
+    next();
     // console.log(to);  //进入的页面
     // console.log(from); //上一个页面
     // console.log(next);
