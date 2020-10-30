@@ -104,7 +104,6 @@
             const close = (() => {
                 data.dialog_info_flag = false;
                 //回调是不需要进行逻辑
-
                 emit("update:flag", false);
                 emit("close");
                 // root.$emit('close',false);
